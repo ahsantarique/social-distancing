@@ -428,3 +428,31 @@ if __name__ == '__main__':
     
     plt.legend(["n="+str(n) for n in nlist])
     plt.show()
+
+
+
+    ## normalized
+    i = 0
+    for num_vacc_list in n_num_vacc_list:
+        num_vacc_list = np.array(num_vacc_list) / nlist[i]
+        i += 1
+
+        plt.plot(c_by_alpha, num_vacc_list)
+        plt.xlabel(r'(C/$\alpha$)')
+        plt.ylabel("#vacc")
+
+    plt.legend(["n="+str(n) for n in nlist])
+    plt.show()
+
+
+    i = 0
+    for exp_inf_list in n_exp_inf_list:
+        exp_inf_list = np.array(exp_inf_list) / nlist[i]
+        i += 1
+
+        plt.plot(c_by_alpha, exp_inf_list)
+        plt.xlabel(r'(C/$\alpha$)')
+        plt.ylabel("E[#infection]")
+    
+    plt.legend(["n="+str(n) for n in nlist])
+    plt.show()
