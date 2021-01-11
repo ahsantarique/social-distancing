@@ -314,100 +314,117 @@ if __name__ == '__main__':
     epsilon = 0.001
     alphavals = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     #alphavals = sys.argv[1]
-    n = 100
-    m = 2
-    avg_file_name = './vacc_albemarle_household_1_7_dec7_avg.txt'
-    raw_file_name = './vacc_albemarle_household_1_7_dec7_raw.txt' 
-    
-    raw_data = []
-    num_times = 1
-    np.random.seed(0);
-
-    #### read from a fixed graph
-    #G = read_graph('../HouseholdGraph_Albe_1.90/household_undirected_albe_1.90.txt')
-    G = nx.barabasi_albert_graph(100, 3)
-    n = len(G.nodes())
-    print("Original G num_edges:", len(G.edges()), " num_nodes:", len(G.nodes()))
-    
-    # Remove k nodes with highest degree. Create a dictionary of {k: max_component_size} to check 
-    # which k should be chosen to initialise the graph
-    k_max_comp_dict = {}
-
-    #k percent 
-    for k in range(99):
-        k_node = int(k/100*len(G.nodes()))
-        G_res = remove_topk_nodes(G, k_node ) # removes k% node here
-        H, comp_d, comp_id, comp_len, comp_max_id = inital_comp_size(G_res) # find the comp details of the residual graph
-        avg_comp_size, max_comp_size = print_analysis(comp_id, comp_len) #nothing very important
-        k_max_comp_dict[k] = max_comp_size            
-    
-    print("Done k_max_comp_dict")
-
-    times = 1
-    total_graph_data = {}
 
 
+    nlist = [100, 200, 500, 1000]
+    mlist = [3, 3, 3, 3]
 
-    num_vacc_list = []
-    exp_inf_list = []
-    for ind, alpha in enumerate(alphavals):
-        # Choose k for a given alpha such that max_comp_size < n/alpha
-        for k, max_comp_size in k_max_comp_dict.items():
-            if max_comp_size < n/alpha:
-                k_node = int(k/100*len(G.nodes()))
-                G_res = remove_topk_nodes(G, k_node )
-                break
+    n_num_vacc_list = []
+    n_exp_inf_list = []
+    for n,m in zip(nlist, mlist):
+        avg_file_name = './vacc_albemarle_household_1_7_dec7_avg.txt'
+        raw_file_name = './vacc_albemarle_household_1_7_dec7_raw.txt' 
         
-        print("alpha: ", alpha, "Top k: ", k, "max_comp_size :", max_comp_size, "Num of nodes: ", len(G_res.nodes), "Num of edges: ", len(G_res.edges))
-        # Initialize graph by removing top k nodes
+        raw_data = []
+        num_times = 1
+        np.random.seed(0);
 
-
-        x = {}; Cvacc = {}; Cinf = {}; #alpha = 10
-        for u in G.nodes():
-            x[u] = 1 #np.random.randint(0, 2)
-            Cvacc[u] = 1; 
-            Cinf[u] = Cvacc[u]*float(alpha)
-            
-        for u in G_res.nodes():
-            x[u] = 0 #np.random.randint(0, 2)
-
-        ## I'm guessing 1 means vaccinated and 0 means antivaxx
-            
-        #T = 500
-        pre_vacc_nodes = len([i for i in x if x[i] == 1])
-        x, nviol, avg_comp_size, max_comp_size, comp_id, comp_len, comp_d = best_response(G, Cvacc, Cinf, x, T, epsilon)
-        num_vacc_nodes = len([i for i in x if x[i] == 1])
-        temp = [alpha, times, avg_comp_size, max_comp_size, num_vacc_nodes, pre_vacc_nodes]
-        raw_data.append(temp)
+        #### read from a fixed graph
+        #G = read_graph('../HouseholdGraph_Albe_1.90/household_undirected_albe_1.90.txt')
+        G = nx.barabasi_albert_graph(n, m)
+        n = len(G.nodes())
+        print("Original G num_edges:", len(G.edges()), " num_nodes:", len(G.nodes()))
         
+        # Remove k nodes with highest degree. Create a dictionary of {k: max_component_size} to check 
+        # which k should be chosen to initialise the graph
+        k_max_comp_dict = {}
+
+        #k percent 
+        for k in range(99):
+            k_node = int(k/100*len(G.nodes()))
+            G_res = remove_topk_nodes(G, k_node ) # removes k% node here
+            H, comp_d, comp_id, comp_len, comp_max_id = inital_comp_size(G_res) # find the comp details of the residual graph
+            avg_comp_size, max_comp_size = print_analysis(comp_id, comp_len) #nothing very important
+            k_max_comp_dict[k] = max_comp_size            
+        
+        print("Done k_max_comp_dict")
+
+        times = 1
+        total_graph_data = {}
+
+
+
+        num_vacc_list = []
+        exp_inf_list = []
+        for ind, alpha in enumerate(alphavals):
+            # Choose k for a given alpha such that max_comp_size < n/alpha
+            for k, max_comp_size in k_max_comp_dict.items():
+                if max_comp_size < n/alpha:
+                    k_node = int(k/100*len(G.nodes()))
+                    G_res = remove_topk_nodes(G, k_node )
+                    break
+            
+            print("alpha: ", alpha, "Top k: ", k, "max_comp_size :", max_comp_size, "Num of nodes: ", len(G_res.nodes), "Num of edges: ", len(G_res.edges))
+            # Initialize graph by removing top k nodes
+
+
+            x = {}; Cvacc = {}; Cinf = {}; #alpha = 10
+            for u in G.nodes():
+                x[u] = 1 #np.random.randint(0, 2)
+                Cvacc[u] = 1; 
+                Cinf[u] = Cvacc[u]*float(alpha)
+                
+            for u in G_res.nodes():
+                x[u] = 0 #np.random.randint(0, 2)
+
+            ## I'm guessing 1 means vaccinated and 0 means antivaxx
+                
+            #T = 500
+            pre_vacc_nodes = len([i for i in x if x[i] == 1])
+            x, nviol, avg_comp_size, max_comp_size, comp_id, comp_len, comp_d = best_response(G, Cvacc, Cinf, x, T, epsilon)
+            num_vacc_nodes = len([i for i in x if x[i] == 1])
+            temp = [alpha, times, avg_comp_size, max_comp_size, num_vacc_nodes, pre_vacc_nodes]
+            raw_data.append(temp)
+            
 
 
 
 
-        num_vacc_list.append(num_vacc_nodes)
-        # print(comp_d)
-        exp_infection = 0
-        for i in comp_d:
-            exp_infection += len(comp_d[i])*len(comp_d[i])
-        exp_inf_list.append(exp_infection)
+            num_vacc_list.append(num_vacc_nodes)
+            # print(comp_d)
+            exp_infection = 0
+            for i in comp_d:
+                exp_infection += len(comp_d[i])*len(comp_d[i])
+            exp_inf_list.append(exp_infection/n)
 
-        print("alpha: ", alpha, "Percent voilated: ", nviol/len(x), "Num of vaccinated nodes: ", num_vacc_nodes, "pre_vacc_nodes: ", pre_vacc_nodes)
-        print("avg_comp_size: ", avg_comp_size, "max_comp_size: ",  max_comp_size, "\n")
-        graph_data = save_graph_data(comp_id, comp_len, comp_d, G)
-        #save_degree_hist(comp_id, comp_len, comp_d, G, alpha)
-        total_graph_data[alpha] = graph_data
+            print("alpha: ", alpha, "Percent voilated: ", nviol/len(x), "Num of vaccinated nodes: ", num_vacc_nodes, "pre_vacc_nodes: ", pre_vacc_nodes)
+            print("avg_comp_size: ", avg_comp_size, "max_comp_size: ",  max_comp_size, "\n")
+            graph_data = save_graph_data(comp_id, comp_len, comp_d, G)
+            #save_degree_hist(comp_id, comp_len, comp_d, G, alpha)
+            total_graph_data[alpha] = graph_data
 
-        save_file(raw_file_name, raw_data)
-        #np.save('../out/total_graph_data.npy', total_graph_data) # save
-        #sys.stdout.flush()
-    
-    c_by_alpha = [1/a for a in alphavals]
-    plt.plot(c_by_alpha, num_vacc_list)
-    plt.xlabel('(C/alpha)')
-    plt.ylabel("#vacc")
+            save_file(raw_file_name, raw_data)
+            #np.save('../out/total_graph_data.npy', total_graph_data) # save
+            #sys.stdout.flush()
+        
+        n_num_vacc_list.append(num_vacc_list)
+        n_exp_inf_list.append(exp_inf_list)
+
+
+        c_by_alpha = [1/a for a in alphavals]
+
+    for num_vacc_list in n_num_vacc_list:
+        plt.plot(c_by_alpha, num_vacc_list)
+        plt.xlabel(r'(C/$\alpha$)')
+        plt.ylabel("#vacc")
+
+    plt.legend([str(n) for n in nlist])
     plt.show()
 
-    plt.plot(c_by_alpha, exp_inf_list)
-    plt.xlabel('(C/alpha)')
-    plt.ylabel("E[#infection]")
+    for exp_inf_list in n_exp_inf_list:
+        plt.plot(c_by_alpha, exp_inf_list)
+        plt.xlabel(r'(C/$\alpha$)')
+        plt.ylabel("E[#infection]")
+    
+    plt.legend([str(n) for n in nlist])
     plt.show()
