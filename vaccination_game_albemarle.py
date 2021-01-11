@@ -418,7 +418,7 @@ if __name__ == '__main__':
         plt.xlabel(r'(C/$\alpha$)')
         plt.ylabel("#vacc")
 
-    plt.legend([str(n) for n in nlist])
+    plt.legend(["n="+str(n) for n in nlist])
     plt.show()
 
     for exp_inf_list in n_exp_inf_list:
@@ -426,5 +426,5 @@ if __name__ == '__main__':
         plt.xlabel(r'(C/$\alpha$)')
         plt.ylabel("E[#infection]")
     
-    plt.legend([str(n) for n in nlist])
+    plt.legend(["n="+str(n) for n in nlist])
     plt.show()
