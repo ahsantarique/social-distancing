@@ -349,7 +349,7 @@ if __name__ == '__main__':
 
 
     num_vacc_list = []
-
+    exp_inf_list = []
     for ind, alpha in enumerate(alphavals):
         # Choose k for a given alpha such that max_comp_size < n/alpha
         for k, max_comp_size in k_max_comp_dict.items():
@@ -385,8 +385,11 @@ if __name__ == '__main__':
 
 
         num_vacc_list.append(num_vacc_nodes)
-
-
+        # print(comp_d)
+        exp_infection = 0
+        for i in comp_d:
+            exp_infection += len(comp_d[i])*len(comp_d[i])
+        exp_inf_list.append(exp_infection)
 
         print("alpha: ", alpha, "Percent voilated: ", nviol/len(x), "Num of vaccinated nodes: ", num_vacc_nodes, "pre_vacc_nodes: ", pre_vacc_nodes)
         print("avg_comp_size: ", avg_comp_size, "max_comp_size: ",  max_comp_size, "\n")
@@ -402,4 +405,9 @@ if __name__ == '__main__':
     plt.plot(c_by_alpha, num_vacc_list)
     plt.xlabel('(C/alpha)')
     plt.ylabel("#vacc")
+    plt.show()
+
+    plt.plot(c_by_alpha, exp_inf_list)
+    plt.xlabel('(C/alpha)')
+    plt.ylabel("E[#infection]")
     plt.show()
