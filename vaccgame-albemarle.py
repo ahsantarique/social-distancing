@@ -360,9 +360,15 @@ if __name__ == '__main__':
     n_num_vacc_list = []
     n_exp_inf_list = []
 
+    n_max_comp_list = []
+
+
     for i in range(num_times):
         num_vacc_list = []
         exp_inf_list = []
+
+        max_comp_list = []
+
         for ind, alpha in enumerate(alphavals):
             # Choose k for a given alpha such that max_comp_size < n/alpha
             for k, max_comp_size in k_max_comp_dict.items():
@@ -398,6 +404,10 @@ if __name__ == '__main__':
 
 
             num_vacc_list.append(num_vacc_nodes)
+            
+            max_comp_list.append(max_comp_size)
+
+
             # print(comp_d)
             exp_infection = 0
             for i in comp_d:
@@ -416,10 +426,11 @@ if __name__ == '__main__':
         
         n_num_vacc_list.append(num_vacc_list)
         n_exp_inf_list.append(exp_inf_list)
-    
+        n_max_comp_list.append(max_comp_list)
 
     n_num_vacc_list = np.array(n_num_vacc_list)
     n_exp_inf_list = np.array(n_exp_inf_list)
+    n_max_comp_list = np.array(n_max_comp_list)
 
 
     vacc_mean = n_num_vacc_list.mean(axis = 0)
@@ -427,6 +438,9 @@ if __name__ == '__main__':
 
     exp_inf_mean = n_exp_inf_list.mean(axis = 0)
     exp_inf_std = n_exp_inf_list.std(axis = 0)
+
+    max_comp_mean = n_max_comp_list.mean(axis = 0)
+    max_comp_std = n_max_comp_list.std(axis = 0)
 
 
     print(vacc_mean)
@@ -450,6 +464,17 @@ if __name__ == '__main__':
 
 
 
+    plt.errorbar(c_by_alpha, max_comp_mean, yerr=max_comp_std, fmt='o')
+    plt.plot(c_by_alpha, max_comp_mean)
+    plt.xlabel(r'$C_{vacc}/C_{inf}$')
+    plt.ylabel("max component size")
+
+    plt.show()
+
+
+
+
+
     ## normalized
 
 
@@ -467,4 +492,12 @@ if __name__ == '__main__':
     plt.errorbar(c_by_alpha, exp_inf_mean/n, yerr=exp_inf_std/n, fmt='o')
     plt.xlabel(r'$C_{vacc}/C_{inf}$)')
     plt.ylabel("E[#infection]/n")
+    plt.show()
+
+
+    plt.errorbar(c_by_alpha, max_comp_mean/n, yerr=max_comp_std/n, fmt='o')
+    plt.plot(c_by_alpha, max_comp_mean/n)
+    plt.xlabel(r'$C_{vacc}/C_{inf}$')
+    plt.ylabel("max component size/n")
+
     plt.show()
