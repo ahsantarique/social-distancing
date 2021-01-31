@@ -244,8 +244,11 @@ def best_response_v2(G, Cvacc, Cinf, x, T, epsilon=0.05):
         for u in G.nodes():
 #             itrn += 1
 #             if (itrn % 10 == 0): print(itrn)
-            num_updated += update_if_reduce(x, G, H, comp_d, comp_id, comp_len, 
-                                            cost, Cvacc, Cinf, comp_max_id, u)
+            if reduction_in_cost(G, x, comp_id, comp_len, cost, Cvacc, Cinf, u) > 0:
+                x, comp_d, comp_id, comp_len, cost, comp_max_id = update_strategy(x, 
+                                    G, H, comp_d, comp_id, comp_len, cost, Cvacc, Cinf, comp_max_id, u)
+                num_updated += 1
+            
         if num_updated <= epsilon*len(x): return x, num_updated
     return x, num_updated
 
