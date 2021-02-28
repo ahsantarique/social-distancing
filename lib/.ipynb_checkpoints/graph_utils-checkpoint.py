@@ -7,6 +7,9 @@ from IPython.core.debugger import set_trace
 import copy
 import pickle as pk
 import random
+import collections
+from util import *
+from strategy_vector_manipulator import *
 
 '''
 Cvacc[i] = cost of vaccination for node i
@@ -205,11 +208,11 @@ def best_response_v2(G, Cvacc, Cinf, x, T, p, epsilon=0.05):
             if reduction_in_cost(G, x, p, cost, Cvacc, Cinf, u) > 0:
                 x, cost = update_strategy(G, x, p, cost, Cvacc, Cinf, u)
                 num_updated += 1
-        if num_updated <= epsilon*len(x): return x, num_updated
+        if num_updated <= epsilon*len(x): return x, num_updated, t
     
     print("Time to converege: ", t)
     
-    return x, num_updated
+    return x, num_updated, t
 
 
 def save_file(filename, data):
@@ -282,3 +285,75 @@ def get_topk_nodes(G, k):
     degree_tup = sorted(degree_tup, key=lambda x: -1*x[1])
     top_k_nodes = [x for x,d in degree_tup[:k]]
     return top_k_nodes
+
+
+def get_topk_exp_infsize(G, k, p):
+    
+    topk_list = [get_topk_nodes(G, i) for i in k]
+
+    zs = []
+    for knodes in topk_list:
+        x = {}
+        for i in G.nodes: x[i] = 0
+        for i in knodes: x[i] = 1
+
+        z = exp_infsize(G, x, p)
+
+        zs.append(z)
+    
+    return zs, topk_list
+
+
+
+def plot_jaccard(alphavals, xlist_alpha, topk_list):
+    jaccard_mean = []
+    jaccard_std = []
+    validalpha = []
+    for i, alpha in enumerate(alphavals):
+        j = []
+        knodes = topk_list[i]
+        for x in xlist_alpha[alpha]:
+            vacc = get_provax(x)
+            v = intersect(set(vacc), set(knodes))
+            u = union(set(vacc), set(knodes))
+            if(len(u) != 0):
+                j.append((len(v)/len(u)))
+        
+        if(len(j) != 0):
+            validalpha.append(alpha)
+            j = np.array(j)
+            jaccard_mean.append(j.mean())
+            jaccard_std.append(j.std())
+
+    plt.errorbar(validalpha, jaccard_mean, jaccard_std, fmt = 'o-')
+    plt.xlabel(r'$\alpha$')
+    plt.ylabel('Jaccard Index')
+    plt.show()
+    return jaccard_mean, jaccard_std
+
+
+def compare_degree(s1, title):
+    a = [i[1] for i in s1.degree()]
+    a2 = collections.Counter(a)
+    a2v = list(a2.values())
+    
+    
+    plt.xlim(0,210)
+    plt.bar(a2.keys(), np.log(a2v), width = 1)
+    plt.xlabel("d"); 
+    plt.ylabel("log(Frequency)")
+    plt.title(title + " Degree distribution")
+    plt.savefig('degree_dist_vacc_NE.pdf')
+    plt.show()
+
+def compare_cc(s1, title):
+    a = [round(i,2) for i in nx.clustering(s1).values()]   #Round to 0.01,0.02,etc.
+    a2 = collections.Counter(a)
+    a2v = list(a2.values())
+    plt.bar(a2.keys(), np.log(a2v),width=0.01)
+    plt.xlabel("Clustering Coefficient");
+    plt.ylabel("log(Frequency)")
+    plt.title(title + " Clustering coefficient")
+    plt.savefig('cc_dist_vacc_NE.pdf')
+    plt.show()
+
